@@ -6,7 +6,7 @@ import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import { ReactNode } from "react";
-import { OPEN_GRAPH_IMAGE, SITE_DOMAIN, SITE_NAME } from "@/config/metadata";
+import { OG_IMAGE, SITE_DOMAIN, SITE_NAME } from "@/config/metadata";
 
 export const metadata: Metadata = {
   title: "Note Hub - Create and Organize Your Notes Fast & Easy",
@@ -17,13 +17,7 @@ export const metadata: Metadata = {
     description:
       "Create and organize your notes instantly with our intuitive note-taking platform. Add a tag to your note to find it quickly!",
     url: SITE_DOMAIN,
-    images: [
-      {
-        ...OPEN_GRAPH_IMAGE,
-        alt: SITE_NAME,
-        url: `${SITE_DOMAIN}/notehub-og-meta.jpg`,
-      },
-    ],
+    images: [OG_IMAGE],
     type: "website",
   },
 };
