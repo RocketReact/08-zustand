@@ -1,6 +1,6 @@
 import css from "./not-found.module.css";
 import type { Metadata } from "next";
-import { OPEN_GRAPH_IMAGE } from "@/config/metadata";
+import { OPEN_GRAPH_IMAGE, SITE_DOMAIN } from "@/config/metadata";
 
 export const metadata: Metadata = {
   title: "404 Not Found Page",
@@ -12,6 +12,7 @@ export const metadata: Metadata = {
       {
         ...OPEN_GRAPH_IMAGE,
         alt: "Note Hub - Note Taking App",
+        url: `${SITE_DOMAIN}/404_page_image.jpg`,
       },
     ],
   },
