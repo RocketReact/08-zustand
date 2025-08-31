@@ -1,6 +1,6 @@
 @import "modern-normalize";
 body {
-    font-family: var(--font-nunito), sans-serif;
+    font-family: var(--font-roboto), sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: flex;
@@ -9,5 +9,3 @@ body {
     margin: 0;
     background-color: #f8f9fa;
 }
-
-

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Roboto } from "next/font/google";
 
 import "./globals.css";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   },
 };
 
-const nunito = Nunito({
+const roboto = Roboto({
   subsets: ["latin"],
   weight: ["500", "700"],
-  variable: "--font-nunito",
+  variable: "--font-roboto",
   display: "swap",
 });
 
@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <TanStackProvider>
       <html lang="en">
-        <body className={nunito.variable}>
+        <body className={roboto.variable}>
           <Header />
           {children}
           {modal}
