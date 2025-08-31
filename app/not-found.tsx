@@ -1,5 +1,6 @@
 import css from "./not-found.module.css";
 import type { Metadata } from "next";
+import { OPEN_GRAPH_IMAGE } from "@/config/metadata";
 
 export const metadata: Metadata = {
   title: "404 Not Found Page",
@@ -9,9 +10,7 @@ export const metadata: Metadata = {
     description: "Sorry, the page you are looking for does not exist.",
     images: [
       {
-        url: "http://localhost:3000/notehub-og-meta.jpg",
-        width: 1200,
-        height: 630,
+        ...OPEN_GRAPH_IMAGE,
         alt: "Note Hub - Note Taking App",
       },
     ],

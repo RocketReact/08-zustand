@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import css from "./SkeletonLoader.module.css";
+import Image from "next/image";
 
 interface ImgWithSkeletonProps {
   src: string;
@@ -22,7 +23,7 @@ export default function ImgWithSkeleton({
       {!loaded && (
         <div className={css.skeleton} style={{ width, height }}></div>
       )}
-      <img
+      <Image
         src={src}
         alt={alt}
         style={{ width, height, display: loaded ? "block" : "none" }}
