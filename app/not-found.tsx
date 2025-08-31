@@ -12,7 +12,7 @@ export const metadata: Metadata = {
       {
         ...OPEN_GRAPH_IMAGE,
         alt: "Note Hub - Note Taking App",
-        url: `${SITE_DOMAIN}/404_page_image.jpg`,
+        url: `${SITE_DOMAIN}/404_page_image.webp`,
       },
     ],
   },
