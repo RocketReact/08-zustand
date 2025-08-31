@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Note Hub - Fast Note Taking Website",
     description:
-      "Create and organize your notes instantly with our intuitive note-taking platform.",
+      "Create and organize your notes instantly with our intuitive note-taking platform. Add a tag to your note to find it quickly!",
     url: SITE_DOMAIN,
     images: [{ ...OPEN_GRAPH_IMAGE, alt: SITE_NAME }],
     type: "website",
