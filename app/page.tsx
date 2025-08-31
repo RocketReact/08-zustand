@@ -17,7 +17,7 @@ export default function Page() {
       </p>
       <Image
         className={css.image}
-        src="/Zanzibar.webp"
+        src="/notehub-og-meta.jpg"
         alt="hero"
         width={1200}
         height={800}
