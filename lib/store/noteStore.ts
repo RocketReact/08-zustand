@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 import { create } from "zustand";
-import type { NoteFormZustandStore, NoteDraft } from "@/types/note";
+import type { NoteFormZustandStore } from "@/types/note";
 import { persist } from "zustand/middleware";
 
 const ValidationSchema = Yup.object().shape({

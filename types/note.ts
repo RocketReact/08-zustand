@@ -23,7 +23,7 @@ const tagsList: string[] = [
 ];
 export default tagsList;
 
-export interface NoteDraft {
+export interface initialDraft {
   title: string;
   content: string;
   tag: string;
@@ -33,14 +33,14 @@ export interface NoteFormZustandStore {
   content: string;
   tag: string;
 
-  draft: NoteDraft;
+  draft: initialDraft;
 
   errors: {
     title?: string;
     content?: string;
     tag?: string;
   };
-  updateField: (field: keyof NoteDraft, value: string) => void;
+  updateField: (field: keyof initialDraft, value: string) => void;
 
   isSubmitting: boolean;
   setErrors: (errors: NoteFormZustandStore["errors"]) => void;
@@ -49,7 +49,7 @@ export interface NoteFormZustandStore {
   validateForm: () => Promise<boolean>;
 
   //Draft methods
-  setDraft: (draft: NoteDraft) => void;
+  setDraft: (draft: initialDraft) => void;
   clearDraft: () => void;
   loadDraft: () => void;
   hasDraft: () => boolean;
