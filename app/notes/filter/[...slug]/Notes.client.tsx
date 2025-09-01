@@ -10,6 +10,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { useRouter } from "next/navigation";
 interface NotesClientProps {
   tag?: string;
 }
@@ -18,7 +19,7 @@ function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
-
+  const router = useRouter();
   const { data, isSuccess, isPending } = useQuery({
     queryKey: ["notes", page, search, tag],
     queryFn: () => fetchNotes({ page, search, tag }),
@@ -29,8 +30,9 @@ function NotesClient({ tag }: NotesClientProps) {
   const handlePageChange = (page: number) => {
     setPage(page);
   };
+
   const openModal = () => {
-    setModalOpen(true);
+    router.push(`/notes/action/create`);
   };
   const closeModal = () => {
     setModalOpen(false);
