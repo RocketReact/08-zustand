@@ -34,11 +34,11 @@ export default function NoteForm() {
 
   const mutation = useMutation<Note, Error, CreateNote>({
     mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["notes"] });
       resetForm();
       clearDraft();
-      router.back();
+      router.push("/notes/filter/All");
     },
   });
 
@@ -61,6 +61,19 @@ export default function NoteForm() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (hasDraft()) {
+      const confirmLeave = window.confirm(
+        "У вас есть несохраненные изменения. Вы уверены, что хотите выйти?",
+      );
+      if (!confirmLeave) return;
+    }
+
+    resetForm();
+    clearDraft();
+    router.push("/notes/filter/All");
   };
 
   return (
@@ -117,7 +130,7 @@ export default function NoteForm() {
 
       <div className={css.actions}>
         <button
-          onClick={() => router.back()}
+          onClick={handleCancel}
           type="button"
           className={css.cancelButton}
         >
