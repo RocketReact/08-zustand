@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 import { create } from "zustand";
-import type { NoteFormZustandStore } from "@/types/note";
+import type { NoteFormZustandStore, NoteDraft } from "@/types/note";
 import { persist } from "zustand/middleware";
 
 const ValidationSchema = Yup.object().shape({
@@ -13,6 +13,7 @@ const ValidationSchema = Yup.object().shape({
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag")
     .required("Required"),
 });
+
 export const useCreateNewNoteFormStore = create<NoteFormZustandStore>()(
   persist(
     (set, get) => ({
@@ -24,10 +25,12 @@ export const useCreateNewNoteFormStore = create<NoteFormZustandStore>()(
       draft: {
         title: "",
         content: "",
-        tag: "",
+        tag: "Todo",
       },
+
       setErrors: (errors) => set({ errors }),
       setSubmitting: (isSubmitting) => set({ isSubmitting }),
+
       resetForm: () =>
         set({
           title: "",
@@ -36,8 +39,39 @@ export const useCreateNewNoteFormStore = create<NoteFormZustandStore>()(
           errors: {},
           isSubmitting: false,
         }),
+
+      //Update fields
+      updateField: (field, value) =>
+        set((state) => ({
+          [field]: value,
+          draft: { ...state.draft, [field]: value },
+        })),
+
       setDraft: (draft) => set({ draft }),
-      clearDraft: () => set({ draft: { title: "", content: "", tag: "" } }),
+      clearDraft: () =>
+        set({
+          draft: { title: "", content: "", tag: "Todo" },
+        }),
+
+      //Load draft to input
+      loadDraft: () => {
+        const { draft } = get();
+        set({
+          title: draft.title,
+          content: draft.content,
+          tag: draft.tag || "Todo",
+        });
+      },
+
+      // Has the draft value?
+      hasDraft: () => {
+        const { draft } = get();
+        return !!(
+          draft.title ||
+          draft.content ||
+          (draft.tag && draft.tag !== "Todo")
+        );
+      },
 
       validateForm: async () => {
         const { title, content, tag } = get();
@@ -64,6 +98,10 @@ export const useCreateNewNoteFormStore = create<NoteFormZustandStore>()(
         }
       },
     }),
-    { name: "draft" },
+    {
+      name: "draft",
+      //Save to localStorage only draft
+      partialize: (state) => ({ draft: state.draft }),
+    },
   ),
 );

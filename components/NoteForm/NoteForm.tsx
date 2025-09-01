@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useEffect } from "react";
 import css from "./NoteForm.module.css";
 import { createNote } from "@/lib/api";
 import type { CreateNote, Note } from "@/types/note";
@@ -9,7 +10,6 @@ export default function NoteForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  //Create the new Note & save state to store Zustand
   const {
     title,
     content,
@@ -19,16 +19,25 @@ export default function NoteForm() {
     setSubmitting,
     resetForm,
     validateForm,
-    draft,
-    setDraft,
     clearDraft,
+    updateField,
+    loadDraft,
+    hasDraft,
   } = useCreateNewNoteFormStore();
+
+  // Load draft on Mount
+  useEffect(() => {
+    if (hasDraft()) {
+      loadDraft();
+    }
+  }, [hasDraft, loadDraft]);
 
   const mutation = useMutation<Note, Error, CreateNote>({
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       resetForm();
+      clearDraft();
       router.back();
     },
   });
@@ -51,16 +60,11 @@ export default function NoteForm() {
       console.error("failed to create note", error);
     } finally {
       setSubmitting(false);
-      clearDraft(draft);
     }
   };
 
   return (
-    <form
-      onChange={() => setDraft({ ...draft, title, content, tag })}
-      onSubmit={handleSubmit}
-      className={css.form}
-    >
+    <form onSubmit={handleSubmit} className={css.form}>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
@@ -69,7 +73,9 @@ export default function NoteForm() {
           name="title"
           className={css.input}
           value={title}
-          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            updateField("title", e.target.value)
+          }
         />
         {errors.title && <div className={css.error}>{errors.title}</div>}
       </div>
@@ -82,7 +88,9 @@ export default function NoteForm() {
           rows={8}
           className={css.textarea}
           value={content}
-          onChange={(e) => setDraft({ ...draft, content: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            updateField("content", e.target.value)
+          }
         />
         {errors.content && <div className={css.error}>{errors.content}</div>}
       </div>
@@ -93,7 +101,9 @@ export default function NoteForm() {
           id="tag"
           name="tag"
           value={tag}
-          onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            updateField("tag", e.target.value)
+          }
           className={css.select}
         >
           <option value="Todo">Todo</option>

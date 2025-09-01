@@ -23,30 +23,34 @@ const tagsList: string[] = [
 ];
 export default tagsList;
 
-type tagsUnionType = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
-
+export interface NoteDraft {
+  title: string;
+  content: string;
+  tag: string;
+}
 export interface NoteFormZustandStore {
   title: string;
   content: string;
-  tag: tagsUnionType;
+  tag: string;
 
-  draft: {
-    title: string;
-    content: string;
-    tag: string;
-  };
+  draft: NoteDraft;
 
   errors: {
     title?: string;
     content?: string;
     tag?: string;
   };
+  updateField: (field: keyof NoteDraft, value: string) => void;
 
   isSubmitting: boolean;
   setErrors: (errors: NoteFormZustandStore["errors"]) => void;
   setSubmitting: (isSubmitting: boolean) => void;
   resetForm: () => void;
   validateForm: () => Promise<boolean>;
-  setDraft: (draft: { title: string; content: string; tag: string }) => void;
-  clearDraft: (draft: { title: string; content: string; tag: string }) => void;
+
+  //Draft methods
+  setDraft: (draft: NoteDraft) => void;
+  clearDraft: () => void;
+  loadDraft: () => void;
+  hasDraft: () => boolean;
 }
