@@ -3,19 +3,10 @@ import css from "./NoteForm.module.css";
 import * as Yup from "yup";
 import { createNote } from "@/lib/api";
 import type { CreateNote, Note } from "@/types/note";
-import { useActionState, useRef } from "react";
-
-interface FormState {
-  errors: {
-    title?: string;
-    content?: string;
-    tag?: string;
-  };
-  success?: boolean;
-}
-const initialState: FormState = {
-  errors: {},
-};
+import { useRef } from "react";
+import type { NoteFormZustandStore } from "@/types/note";
+import { create } from "zustand";
+import { useRouter } from "next/navigation";
 
 const ValidationSchema = Yup.object().shape({
   title: Yup.string()
@@ -28,79 +19,114 @@ const ValidationSchema = Yup.object().shape({
     .required("Required"),
 });
 
-async function validateFormData(formData: FormData): Promise<FormState> {
-  const data = {
-    title: formData.get("title") as string,
-    content: formData.get("content") as string,
-    tag: formData.get("tag") as string,
-  };
-  try {
-    await ValidationSchema.validate(data, { abortEarly: false });
-    return { errors: {} };
-  } catch (error) {
-    if (error instanceof Yup.ValidationError) {
-      const errors: FormState["errors"] = {};
-      error.inner.forEach((err) => {
-        if (err.path) {
-          errors[err.path as keyof FormState["errors"]] = err.message;
-        }
-      });
-      return { errors };
+const useNoteFormStore = create<NoteFormZustandStore>((set, get) => ({
+  title: "",
+  content: "",
+  tag: "Todo",
+  errors: {},
+  isSubmitting: false,
+
+  setTitle: (title) => set({ title }),
+  setContent: (content) => set({ content }),
+  setTag: (tag) => set({ tag }),
+  setErrors: (errors) => set({ errors }),
+  setSubmitting: (isSubmitting) => set({ isSubmitting }),
+
+  resetForm: () =>
+    set({
+      title: "",
+      content: "",
+      tag: "Todo",
+      errors: {},
+      isSubmitting: false,
+    }),
+
+  validateForm: async () => {
+    const { title, content, tag } = get();
+    const data = { title, content, tag };
+    try {
+      await ValidationSchema.validate(data, { abortEarly: false });
+      set({ errors: {} });
+      return true;
+    } catch (error) {
+      if (error instanceof Yup.ValidationError) {
+        const errors: NoteFormZustandStore["errors"] = {};
+        error.inner.forEach((err) => {
+          if (err.path) {
+            errors[err.path as keyof NoteFormZustandStore["errors"]] =
+              err.message;
+          }
+        });
+        set({ errors });
+      }
+      return false;
     }
-    return { errors: {} };
-  }
-}
+  },
+}));
 
 export default function NoteForm() {
   const queryClient = useQueryClient();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const {
+    title,
+    content,
+    tag,
+    errors,
+    isSubmitting,
+    setTitle,
+    setContent,
+    setTag,
+    setSubmitting,
+    resetForm,
+    validateForm,
+  } = useNoteFormStore();
+
   const mutation = useMutation<Note, Error, CreateNote>({
     mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      formRef.current?.reset();
+      resetForm();
+      router.back();
     },
   });
 
-  async function formAction(
-    prevState: FormState,
-    formData: FormData,
-  ): Promise<FormState> {
-    const validation = await validateFormData(formData);
-    if (Object.keys(validation.errors).length > 0) {
-      return validation;
-    }
-    const noteData: CreateNote = {
-      title: formData.get("title") as string,
-      content: formData.get("content") as string,
-      tag: formData.get("tag") as
-        | "Todo"
-        | "Work"
-        | "Personal"
-        | "Meeting"
-        | "Shopping",
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
 
+    const isValid = await validateForm();
+    if (!isValid) {
+      setSubmitting(false);
+      return;
+    }
+
+    const noteData: CreateNote = { title, content, tag };
+    console.log("Sending data:", noteData);
     try {
       await mutation.mutateAsync(noteData);
-      return { errors: {}, success: true };
     } catch (error) {
-      return { errors: { title: "Failed to create note" } };
+      console.error("failed to create note", error);
+    } finally {
+      setSubmitting(false);
     }
-  }
+  };
 
-  const [state, dispatch] = useActionState(formAction, initialState);
-
-  const stateErrors = state.errors;
+  const router = useRouter();
 
   return (
-    <form ref={formRef} action={dispatch} className={css.form}>
+    <form ref={formRef} onSubmit={handleSubmit} className={css.form}>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
-        <input id="title" type="text" name="title" className={css.input} />
-        {stateErrors.title && (
-          <div className={css.error}>{stateErrors.title} </div>
-        )}
+        <input
+          id="title"
+          type="text"
+          name="title"
+          className={css.input}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        {errors.title && <div className={css.error}>{errors.title} </div>}
       </div>
 
       <div className={css.formGroup}>
@@ -110,33 +136,42 @@ export default function NoteForm() {
           name="content"
           rows={8}
           className={css.textarea}
-          defaultValue=""
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
         />
-        {stateErrors.content && (
-          <div className={css.error}>{stateErrors.content} </div>
-        )}
+        {errors.content && <div className={css.error}>{errors.content} </div>}
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
-        <select id="tag" name="tag" className={css.select}>
+        <select
+          id="tag"
+          name="tag"
+          value={tag}
+          onChange={(e) => setTag(e.target.value as typeof tag)}
+          className={css.select}
+        >
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>
           <option value="Meeting">Meeting</option>
           <option value="Shopping">Shopping</option>
         </select>
-        {stateErrors.tag && <div className={css.error}>{stateErrors.tag} </div>}
+        {errors.tag && <div className={css.error}>{errors.tag} </div>}
       </div>
 
       <div className={css.actions}>
-        <button type="button" className={css.cancelButton}>
+        <button
+          onClick={() => router.back()}
+          type="button"
+          className={css.cancelButton}
+        >
           Cancel
         </button>
         <button
           type="submit"
           className={css.submitButton}
-          disabled={mutation.isPending}
+          disabled={isSubmitting || mutation.isPending}
         >
           Create note
         </button>
