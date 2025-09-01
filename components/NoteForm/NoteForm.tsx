@@ -1,86 +1,28 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import css from "./NoteForm.module.css";
-import * as Yup from "yup";
 import { createNote } from "@/lib/api";
 import type { CreateNote, Note } from "@/types/note";
-import { useRef } from "react";
-import type { NoteFormZustandStore } from "@/types/note";
-import { create } from "zustand";
 import { useRouter } from "next/navigation";
-
-const ValidationSchema = Yup.object().shape({
-  title: Yup.string()
-    .min(3, "Title must have min 3 characters")
-    .max(50, "Title must have max 50 characters")
-    .required("Required"),
-  content: Yup.string().max(500, "Content must have max 500 characters"),
-  tag: Yup.string()
-    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag")
-    .required("Required"),
-});
-
-const useNoteFormStore = create<NoteFormZustandStore>((set, get) => ({
-  title: "",
-  content: "",
-  tag: "Todo",
-  errors: {},
-  isSubmitting: false,
-
-  setTitle: (title) => set({ title }),
-  setContent: (content) => set({ content }),
-  setTag: (tag) => set({ tag }),
-  setErrors: (errors) => set({ errors }),
-  setSubmitting: (isSubmitting) => set({ isSubmitting }),
-
-  resetForm: () =>
-    set({
-      title: "",
-      content: "",
-      tag: "Todo",
-      errors: {},
-      isSubmitting: false,
-    }),
-
-  validateForm: async () => {
-    const { title, content, tag } = get();
-    const data = { title, content, tag };
-    try {
-      await ValidationSchema.validate(data, { abortEarly: false });
-      set({ errors: {} });
-      return true;
-    } catch (error) {
-      if (error instanceof Yup.ValidationError) {
-        const errors: NoteFormZustandStore["errors"] = {};
-        error.inner.forEach((err) => {
-          if (err.path) {
-            errors[err.path as keyof NoteFormZustandStore["errors"]] =
-              err.message;
-          }
-        });
-        set({ errors });
-      }
-      return false;
-    }
-  },
-}));
+import { useCreateNewNoteFormStore } from "@/lib/store/noteStore";
 
 export default function NoteForm() {
   const queryClient = useQueryClient();
-  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
+  //Create the new Note & save state to store Zustand
   const {
     title,
     content,
     tag,
     errors,
     isSubmitting,
-    setTitle,
-    setContent,
-    setTag,
     setSubmitting,
     resetForm,
     validateForm,
-  } = useNoteFormStore();
+    draft,
+    setDraft,
+    clearDraft,
+  } = useCreateNewNoteFormStore();
 
   const mutation = useMutation<Note, Error, CreateNote>({
     mutationFn: createNote,
@@ -102,20 +44,23 @@ export default function NoteForm() {
     }
 
     const noteData: CreateNote = { title, content, tag };
-    console.log("Sending data:", noteData);
+
     try {
       await mutation.mutateAsync(noteData);
     } catch (error) {
       console.error("failed to create note", error);
     } finally {
       setSubmitting(false);
+      clearDraft(draft);
     }
   };
 
-  const router = useRouter();
-
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className={css.form}>
+    <form
+      onChange={() => setDraft({ ...draft, title, content, tag })}
+      onSubmit={handleSubmit}
+      className={css.form}
+    >
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
@@ -124,9 +69,9 @@ export default function NoteForm() {
           name="title"
           className={css.input}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => setDraft({ ...draft, title: e.target.value })}
         />
-        {errors.title && <div className={css.error}>{errors.title} </div>}
+        {errors.title && <div className={css.error}>{errors.title}</div>}
       </div>
 
       <div className={css.formGroup}>
@@ -137,9 +82,9 @@ export default function NoteForm() {
           rows={8}
           className={css.textarea}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => setDraft({ ...draft, content: e.target.value })}
         />
-        {errors.content && <div className={css.error}>{errors.content} </div>}
+        {errors.content && <div className={css.error}>{errors.content}</div>}
       </div>
 
       <div className={css.formGroup}>
@@ -148,7 +93,7 @@ export default function NoteForm() {
           id="tag"
           name="tag"
           value={tag}
-          onChange={(e) => setTag(e.target.value as typeof tag)}
+          onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
           className={css.select}
         >
           <option value="Todo">Todo</option>
@@ -157,7 +102,7 @@ export default function NoteForm() {
           <option value="Meeting">Meeting</option>
           <option value="Shopping">Shopping</option>
         </select>
-        {errors.tag && <div className={css.error}>{errors.tag} </div>}
+        {errors.tag && <div className={css.error}>{errors.tag}</div>}
       </div>
 
       <div className={css.actions}>

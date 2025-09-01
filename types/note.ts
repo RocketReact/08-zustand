@@ -30,6 +30,12 @@ export interface NoteFormZustandStore {
   content: string;
   tag: tagsUnionType;
 
+  draft: {
+    title: string;
+    content: string;
+    tag: string;
+  };
+
   errors: {
     title?: string;
     content?: string;
@@ -37,12 +43,10 @@ export interface NoteFormZustandStore {
   };
 
   isSubmitting: boolean;
-
-  setTitle: (title: string) => void;
-  setContent: (content: string) => void;
-  setTag: (tag: tagsUnionType) => void;
   setErrors: (errors: NoteFormZustandStore["errors"]) => void;
   setSubmitting: (isSubmitting: boolean) => void;
   resetForm: () => void;
   validateForm: () => Promise<boolean>;
+  setDraft: (draft: { title: string; content: string; tag: string }) => void;
+  clearDraft: (draft: { title: string; content: string; tag: string }) => void;
 }
