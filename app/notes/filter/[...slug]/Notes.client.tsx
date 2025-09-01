@@ -65,7 +65,7 @@ function NotesClient({ tag }: NotesClientProps) {
         {isPending && <div className={css.loading}>Loading...</div>}
         {isModalOpen && (
           <Modal closeModal={closeModal}>
-            <NoteForm onClose={closeModal} />
+            <NoteForm />
           </Modal>
         )}
       </div>
