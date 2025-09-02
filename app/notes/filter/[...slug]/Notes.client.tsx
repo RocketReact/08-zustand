@@ -3,8 +3,6 @@
 import css from "./page.module.css";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
-import NoteForm from "@/components/NoteForm/NoteForm";
-import Modal from "@/components/Modal/Modal";
 import NoteList from "@/components/NoteList/NoteList";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
@@ -18,7 +16,6 @@ interface NotesClientProps {
 function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [isModalOpen, setModalOpen] = useState(false);
   const router = useRouter();
   const { data, isSuccess, isPending } = useQuery({
     queryKey: ["notes", page, search, tag],
@@ -31,11 +28,8 @@ function NotesClient({ tag }: NotesClientProps) {
     setPage(page);
   };
 
-  const openModal = () => {
+  const redirectToCreateNote = () => {
     router.push(`/notes/action/create`);
-  };
-  const closeModal = () => {
-    setModalOpen(false);
   };
 
   const handleSearch = useDebouncedCallback((value: string) => {
@@ -55,7 +49,7 @@ function NotesClient({ tag }: NotesClientProps) {
             />
           )}
 
-          <button onClick={openModal} className={css.button}>
+          <button onClick={redirectToCreateNote} className={css.button}>
             Create Note+
           </button>
         </div>
@@ -63,11 +57,6 @@ function NotesClient({ tag }: NotesClientProps) {
           <NoteList notes={data.notes} />
         )}
         {isPending && <div className={css.loading}>Loading...</div>}
-        {isModalOpen && (
-          <Modal closeModal={closeModal}>
-            <NoteForm />
-          </Modal>
-        )}
       </div>
     </>
   );
