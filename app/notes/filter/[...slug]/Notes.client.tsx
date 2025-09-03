@@ -43,8 +43,8 @@ function NotesClient({ tag }: NotesClientProps) {
               onPageChange={handlePageChange}
             />
           )}
-          <Link href={"/notes/action/create"}>
-            <button className={css.button}>Create Note+</button>
+          <Link className={css.button} href={"/notes/action/create"}>
+            Create Note+
           </Link>
         </div>
         {isSuccess && data && data.notes.length > 0 && (
